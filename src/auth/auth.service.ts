@@ -25,4 +25,13 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
+
+  async register(username: string, password: string) {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    return this.usersService.create({
+      username,
+      password: hashedPassword,
+    })
+  }
 }

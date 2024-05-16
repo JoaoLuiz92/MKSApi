@@ -1,4 +1,4 @@
-# ChatBot Api_LLM
+# API MKS Movies
 
 Esta é uma API para gerenciamento de um catálogo de filmes. Ela oferece endpoints para criar, ler, atualizar e deletar filmes, além de endpoints para autenticação de usuários. Apenas usuários autenticados podem acessar o catálogo de filmes.
 

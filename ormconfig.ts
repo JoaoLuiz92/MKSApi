@@ -5,7 +5,7 @@ dotenv.config();
 
 const port = parseInt(process.env.POSTGRES_PORT || '5432', 10);
 
-const AppDataSource = new DataSource({
+export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.POSTGRES_HOST || 'localhost',
   port: port,
@@ -17,5 +17,3 @@ const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
 });
-
-export { AppDataSource };

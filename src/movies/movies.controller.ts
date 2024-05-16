@@ -1,4 +1,3 @@
-// src/movies/movies.controller.ts
 import {
   Controller,
   Get,

@@ -1,6 +1,16 @@
 # ChatBot Api_LLM
 
-Sistema de interação com um OpenIA, e desenvolvido um ChatBot, lhe dando respostas iterativas, que são pré-dispostas por esses sistema chamado LLAMA2, visando uma experiência nova e mágica com o cliente.
+Esta é uma API para gerenciamento de um catálogo de filmes. Ela oferece endpoints para criar, ler, atualizar e deletar filmes, além de endpoints para autenticação de usuários. Apenas usuários autenticados podem acessar o catálogo de filmes.
+
+## Tecnologias Utilizadas
+
+- **TypeScript**
+- **NestJS**
+- **TypeORM**
+- **PostgreSQL**
+- **Redis**
+- **Swagger**
+- **Docker**
 
 ### 📋 Pré-requisitos
 

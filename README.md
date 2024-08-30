@@ -1,249 +1,131 @@
-# API MKS Movies
+# Water-Gas Meter API
 
-Esta é uma API para gerenciamento de um catálogo de filmes. Ela oferece endpoints para criar, ler, atualizar e deletar filmes, além de endpoints para autenticação de usuários. Apenas usuários autenticados podem acessar o catálogo de filmes.
-
-## Tecnologias Utilizadas
-
-- **TypeScript**
-- **NestJS**
-- **TypeORM**
-- **PostgreSQL**
-- **Redis**
-- **Swagger**
-- **Docker**
+Sistema de backend para gerenciamento de leitura individualizada de consumo de água e gás, utilizando integração com a API do Google Gemini para reconhecimento de imagem de medidores. Este projeto visa facilitar a coleta de dados de consumo usando IA, proporcionando uma experiência eficiente e automatizada.
 
 ### 📋 Pré-requisitos
 
-Para rodar a API precisa de tais softwares instalados em sua máquina:
+Para rodar a API, você precisa dos seguintes softwares instalados em sua máquina:
 
 - **Node.js** (Framework de desenvolvimento)
-- **Postman** (Testes de rotas)
-- **Git** (Para fazer clone do repositório)
-- **Docker** (Para PostgreSQL e Redis)
+- **Postman** (Para testes de rotas)
+- **Docker e Docker Compose** (Para rodar a aplicação e o banco de dados PostgreSQL em contêineres)
+- **Git** (Para fazer o clone do repositório)
 
-## 🔧 Instalação
+### 🔧 Instalação
 
-Primeiramente faça um clone deste repositório para sua máquina:
+1. **Clone o repositório para sua máquina:**
 
-```
-git clone "https://github.com/JoaoLuiz92/MKSApi"
+    ```bash
+    git clone https://github.com/JoaoLuiz92/water-gas-meter-api
+    cd water-gas-meter-api
+    ```
 
-```
+2. **Instale as dependências necessárias:**
 
-Instalação das dependencias necessarias, node_modules:
+    ```bash
+    npm install
+    ```
 
-```
-npm install
+3. **Configure o arquivo `.env` na raiz do projeto com o seguinte conteúdo:**
 
-```
+    ```env
+    GEMINI_API_KEY=<SUA_CHAVE_API_GEMINI>
+    ```
 
-Configure o banco de dados PostgreSQL e o Redis. Você pode usar Docker para isso:
+   > **Nota:** Substitua `<SUA_CHAVE_API_GEMINI>` pela sua chave de acesso ao Gemini.
 
-```
-docker-compose up -d
+4. **Suba os contêineres da aplicação e do banco de dados:**
 
-```
+    ```bash
+    docker-compose up --build
+    ```
 
-Configure as variáveis de ambiente. Crie um arquivo .env na raiz do projeto com o seguinte conteúdo:
+5. **Acesse a aplicação no endereço:**
 
-```
+    ```text
+    http://localhost:3000/
+    ```
 
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=123
-POSTGRES_DB=movie_catalog
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=your_jwt_secret
+### 🔩 Explicando as Rotas
 
-```
+#### **POST** `/upload`
 
-Execute as migrações do banco de dados:
+Rota para receber uma imagem (em base64), consultar o Google Gemini e retornar a medida reconhecida pela API de IA. Valida os dados enviados e verifica se já existe uma leitura do mesmo tipo para o mês atual.
 
-```
-npm run build
-npm run migration:run
+- **Request Body:**
 
-```
+    ```json
+    {
+      "image": "base64",
+      "customer_code": "string",
+      "measure_datetime": "datetime",
+      "measure_type": "WATER" ou "GAS"
+    }
+    ```
 
-Inicie a aplicação:
+- **Response Body:**
+  - **200:** Operação realizada com sucesso
+  - **400:** Dados inválidos
+  - **409:** Já existe uma leitura para este tipo no mês atual
 
-```
+#### **PATCH** `/confirm`
 
-npm run start
+Rota para confirmar ou corrigir o valor lido pelo LLM, sem fazer novas consultas à IA.
 
-```
+- **Request Body:**
 
-## 📍 Endpoints
+    ```json
+    {
+      "measure_uuid": "string",
+      "confirmed_value": integer
+    }
+    ```
 
-### 📌 Autenticação
+- **Response Body:**
+  - **200:** Operação realizada com sucesso
+  - **400:** Dados inválidos
+  - **404:** Leitura não encontrada
+  - **409:** Leitura já confirmada
 
-### Registro de Usuário
+#### **GET** `/list`
 
-POST /auth/register
+Rota para listar as medidas realizadas por um determinado cliente, com a opção de filtrar por tipo de medida (WATER ou GAS).
 
-Request Body:
+- **Query Parameters:**
+  - **measure_type** (opcional): Filtra o tipo de medida (WATER ou GAS).
 
-```
-{
-  "username": "example",
-  "password": "password123"
-}
+- **Response Body:**
+  - **200:** Operação realizada com sucesso
+  - **400:** Tipo de medida inválida
+  - **404:** Nenhum registro encontrado
 
-```
+### ⚙️ Executando os Testes de Rotas
 
-Response:
+Utilize o **Postman** para testar as rotas da API:
 
-```
-{
-  "id": 1,
-  "username": "example"
-}
+1. Abra uma nova requisição no Postman.
+2. Selecione o método (POST, PATCH, GET) e insira a URL apropriada.
+3. Preencha o Body conforme a especificação das rotas.
+4. Adicione o token de autenticação na aba Authorization ou nos Headers.
 
-```
+### 📦 Integração com Gemini
 
-### Login de Usuário
+A integração com a API do Google Gemini é feita por meio de requisições HTTP, com os parâmetros e headers especificados na documentação. A API recebe a imagem do medidor, processa o reconhecimento de leitura, e retorna o valor medido, o link temporário da imagem, e um GUID.
 
-POST /auth/login
+### 🛠️ Construído com
 
-Request Body:
+- **[Nest.js](https://nestjs.com/):** O framework web usado
+- **[Docker](https://www.docker.com/):** Para conteinerização da aplicação e banco de dados
+- **[PostgreSQL](https://www.postgresql.org/):** Banco de dados relacional para armazenamento das leituras
+- **[Axios](https://axios-http.com/):** Cliente HTTP para comunicação com a API do Gemini
 
-```
-{
-  "username": "example",
-  "password": "password123"
-}
+### ✒️ Autor
 
-```
+Desafio realizado por:
 
-Response:
+- **João Luiz Da Rosa Junior** - _Desenvolvedor_ - [GitHub](https://github.com/JoaoLuiz92)
 
-```
-{
-  "access_token": "jwt_token"
-}
+### 🎁 Expressões de Gratidão
 
-
-```
-
-## 🎥 Filmes
-
-### Criar Filmes
-
-POST /movies
-
-Request Body:
-
-```
-{
-  "title": "Movie Title",
-  "description": "Movie Description",
-  "director": "Movie Director",
-  "releaseDate": "2023-01-01"
-}
-
-
-```
-
-Response:
-
-```
-{
-  "id": 1,
-  "title": "Movie Title",
-  "description": "Movie Description",
-  "director": "Movie Director",
-  "releaseDate": "2023-01-01"
-}
-
-
-```
-
-### Listar Filmes
-
-GET /movies
-
-Response:
-
-```
-[
-  {
-    "id": 1,
-    "title": "Movie Title",
-    "description": "Movie Description",
-    "director": "Movie Director",
-    "releaseDate": "2023-01-01"
-  }
-]
-
-
-```
-
-### Obter Filme por ID
-
-GET /movies/:id
-
-Response:
-
-```
-{
-  "id": 1,
-  "title": "Movie Title",
-  "description": "Movie Description",
-  "director": "Movie Director",
-  "releaseDate": "2023-01-01"
-}
-```
-
-### Atualizar Filme
-
-PUT /movies/:id
-
-Request Body:
-
-```
-{
-  "title": "Updated Movie Title",
-  "description": "Updated Movie Description",
-  "director": "Updated Movie Director",
-  "releaseDate": "2023-01-01"
-}`
-```
-
-Response:
-
-```
-{
-  "id": 1,
-  "title": "Updated Movie Title",
-  "description": "Updated Movie Description",
-  "director": "Updated Movie Director",
-  "releaseDate": "2023-01-01"
-}
-
-```
-
-### Deletar Filme
-
-DELETE /movies/:id
-
-## Documentação Swagger
-
-A documentação Swagger pode ser acessada em http://localhost:3000/api.
-Ela fornece detalhes sobre todos os endpoints disponíveis e permite testar as requisições diretamente pelo navegador.
-
-## Desenvolvedor
-
-- **João Luiz Da Rosa Junior** - [Desenvolvedor](https://github.com/JoaoLuiz92)
-
-## 📄 Licença
-
-Este projeto está sob a licença (MIT) - veja o arquivo [LICENSE.md](https://github.com/JoaoLuiz92/MKSApi/blob/main/LICENSE) para detalhes.
-
-## 🎁 Expressões de gratidão
-
-Projeto de API Rest, feito para um teste técnico, onde tive bons e varios desafios,
-e a oportunidade de aprender,e me aperfeiçoar ainda mais na área de backend 📢;
-
-- Agradeço a Deus por essa oportunidade, e também a empresa MKS por esta oportunidade, e suporte no teste realizado 🫂;
+- Agradeço pela oportunidade de aprender novas técnicas e integrar APIs de IA em aplicações reais. Este projeto me permitiu explorar a combinação de inteligência artificial com tecnologias de backend. 📢
+- Agradeço a Deus por essa oportunidade e à Shopper por este desafio técnico e suporte durante o desenvolvimento. 🫂
